@@ -1,0 +1,15 @@
+{
+    "INCLUDE_TEXTURES":[
+        "img/exampleBG_1.png",
+        "img/exampleBG_2.png",
+        "img/exampleBG_3.png",
+        "img/buttonTest1.png",
+        "img/buttonTest2.png",
+        "img/buttonTest3.png",
+        "img/imageSample1.png",
+        "img/imageSample2.png"
+    ],
+    "INCLUDE_JSON":[
+        "json/example.json"
+    ]
+}

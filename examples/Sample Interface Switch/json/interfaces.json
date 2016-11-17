@@ -1,0 +1,53 @@
+{
+    "interface0": {
+        "Backgrounds": {
+            "bgtes1": {
+                "texture": "img/exampleBG_1.png"
+            }
+        },
+        "Buttons": {
+            "button1": {
+                "image": {
+                    "texture": "img/buttonTest1.png",
+                    "pos": [300,300]
+                },
+                "onClick": [
+                    ["Open",["Interface0"]]
+                ]
+            }
+        }
+    },
+    "interface1": {
+        "Backgrounds": {
+            "bgtes1": {
+                "texture": "img/exampleBG_3.png"
+            },
+            "bgtest2": {
+                "texture": "img/exampleBG_2.png",
+                "skew":[1.1,1.1]
+            }
+        },
+        "Texts": {
+            "text1": {
+                "text": "Style Can Be Defined via JSON file."
+            }
+        },
+        "Buttons": {
+            "button1": {
+                "image": {
+                    "texture": "img/buttonTest3.png",
+                    "pos": [300,300]
+                },
+                "onClick": [
+                    ["Open",["Interface0"]]
+                ]
+            }
+        },
+        "Images":{
+            "image1":{
+                "texture":"img/imageSample1.png",
+                "pos":[300,300]
+            }
+        }
+    }
+}

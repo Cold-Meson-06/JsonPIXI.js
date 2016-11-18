@@ -1,9 +1,10 @@
-function MainLoop() {
-  requestAnimationFrame(MainLoop);
-  JsonPIXI.Render()
+var renderer = PIXI.autoDetectRenderer(982, 632, null, false, false)
+document.body.appendChild(renderer.view);
+renderer.view.style.position = 'absolute';
+renderer.view.style.left = (window.innerWidth - renderer.width) / 2 + 'px';
+renderer.view.style.top = (window.innerHeight - renderer.height) / 2 + 'px';
+JsonPIXI.Start("json", loop)
+function loop() {
+  requestAnimationFrame(loop)
+  renderer.render(JsonPIXI.MainLayer)
 }
-//JsonPIXI.MakeRendererPrefab()
-JsonPIXI.Start("json",MainLoop)
-//JsonPIXI.Start("json directory", callback )
-
-//If you want to create your own PIXI wiewport use [ -your renderer- ].render(JsonPIXI.Layers.MainLayer)

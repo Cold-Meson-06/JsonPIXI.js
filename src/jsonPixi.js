@@ -1,4 +1,3 @@
-//Add SetData method to PIXI.DisplayObject for change the properties by a json object
 PIXI.DisplayObject.prototype.SetData = function (jsonTag) {
   if (Array.isArray(jsonTag.pos)) {
     this.position.set(jsonTag.pos[0], jsonTag.pos[1])
@@ -32,22 +31,20 @@ PIXI.DisplayObject.prototype.SetData = function (jsonTag) {
     this.alpha = jsonTag.alpha
   }
 }
-//And this for reset 
 PIXI.DisplayObject.prototype.ResetData = function () {
   this.position.set(this.dataTag.pos[0], this.dataTag.pos[1])
-  this.skew.set(1, 1)
+  this.skew.set(0, 0)
   this.scale.set(1, 1)
   this.alpha = 1
   this.rotation = 0
   this.tint = 0xFFFFFF
 }
-// The Main Object
 var JsonPIXI = (function () {
-  //To store JSON data from files from include.json/INCLUDE_JSON
   var JSONs = {}
-  //Used to load all files by an array
   var itemsToLoad = []
-  //Examples
+  var loaded = false
+  var InterfaceLayer = new PIXI.Container()
+  var MainLayer = new PIXI.Container().addChild(InterfaceLayer)
   var TextStyles = {
     standard: {
       fontFamily: 'Yukarimobile',
@@ -59,96 +56,27 @@ var JsonPIXI = (function () {
       wordWrapWidth: 440
     }
   }
-  //Uset to make cross-origin requests without starting the loader
-  var GetJSON = function (url, callback) {
+  var GetJSON = function (url, callback, forceCallback = false) {
     var buffer = {}
     var xobj = new XMLHttpRequest();
     xobj.overrideMimeType('application/json');
     xobj.open('GET', url, true);
     xobj.onreadystatechange = function () {
       if (xobj.readyState == 4 && xobj.status == '200') {
-        buffer.data = JSON.parse(xobj.responseText);
-        callback && callback()
+          buffer.data = JSON.parse(xobj.responseText);
+          callback && callback()
       };
     };
-    xobj.send(null);
+    xobj.send(null)
     return buffer
   };
-  //To make sure that no invalid texture is requested
   var getTexture = function (texture) {
     if (!PIXI.utils.TextureCache[texture]) {
-      alert("TEXTURE " + texture + " NOT FOUND")
+      console.warn("TEXTURE " + texture + " NOT FOUND")
     } else {
       return PIXI.utils.TextureCache[texture]
     }
   }
-  //To start PIXI renderer and add some convenience methods
-  var GetRenderer = function () {
-    renderer = PIXI.autoDetectRenderer(982, 632, null, false, false)
-    PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
-    document.body.appendChild(renderer.view);
-    renderer.view.style.position = 'absolute';
-    renderer.view.style.left = (window.innerWidth - renderer.width) / 2 + 'px';
-    renderer.view.style.top = (window.innerHeight - renderer.height) / 2 + 'px';
-    return {
-      renderer: renderer,
-      resize: function (fixBorders, y) {
-        renderer.view.style.position = 'absolute';
-        renderer.view.style.left = (window.innerWidth - renderer.width) / 2 + 'px';
-        renderer.view.style.top = (window.innerHeight - renderer.height) / 2 + 'px';
-        if (typeof fixBorders === "bolean" && fixBorders) {
-          renderer.resize(window.innerWidth, window.innerHeight)
-          return [window.innerWidth, window.innerHeight]
-        } else if (typeof fixBorders === "number") {
-          renderer.resize(fixBorders, y)
-          return [fixBorders, y]
-        }
-      },
-      getSize: function () {
-        return [renderer.width, renderer.height]
-      }
-    }
-  }
-  //To separe from interface layer and other layers
-  var Layers = (function () {
-    var BattleCam = new PIXI.Container()
-    var InterfaceLayer1 = new PIXI.Container()
-    var InterfaceLayer2 = new PIXI.Container()
-    var GameBackground = new PIXI.Container()
-    var MainLayer = new PIXI.Container()
-    var all = [BattleCam, InterfaceLayer1, InterfaceLayer2, GameBackground, MainLayer]
-    MainLayer.addChild(InterfaceLayer1)
-    return {
-      BattleCam: BattleCam,
-      getAll: all,
-      InterfaceLayer1: InterfaceLayer1,
-      InterfaceLayer2: InterfaceLayer2,
-      GameBackground: GameBackground,
-      MainLayer: MainLayer,
-      addLayer: function (layer) {
-        Layers[layer] = new PIXI.Container()
-        Layers[layer].visible = false
-        all.push(Layers[layer])
-        MainLayer.addChildAt(Layers[layer])
-      },
-      showLayer: function (layer) {
-        if (Layers.hasOwnProperty(layer)) {
-          Layers[layer].visible = true
-        }
-      },
-      hideLayer: function (layer) {
-        if (Layers.hasOwnProperty(layer)) {
-          Layers[layer].visible = false
-        }
-      },
-      setLayerIndex: function (layer, index = 0) {
-        if (Layers.hasOwnProperty(layer)) {
-          MainLayer.setChildIndex(layer, index)
-        }
-      }
-    }
-  })()
-  //To manage interfaces
   var Interfaces = (function () {
     var currentUI;
     var list = []
@@ -164,10 +92,11 @@ var JsonPIXI = (function () {
     var Open = function (ui, update) {
       if (!update) Historic.push(currentUI);
       getCurrentUI().onClose && getCurrentUI().onClose()
-      Layers.InterfaceLayer1.removeChild(getCurrentUI().stage)
+      InterfaceLayer.removeChild(getCurrentUI().stage)
       currentUI = ui
       getCurrentUI().onOpen && getCurrentUI().onOpen()
-      Layers.InterfaceLayer1.addChild(getCurrentUI().stage)
+      InterfaceLayer.addChild(getCurrentUI().stage)
+      getCurrentUI().updateBackground()
     }
     var Back = function () {
       if (Historic.length > 0) {
@@ -176,8 +105,15 @@ var JsonPIXI = (function () {
       }
     }
     var Init = function (ui) {
-      currentUI = ui
-      Layers.InterfaceLayer1.addChild(getCurrentUI().stage)
+      if (Interfaces.hasOwnProperty(ui)) {
+        currentUI = ui
+        InterfaceLayer.addChild(getCurrentUI().stage)
+        getCurrentUI().updateBackground()
+      } else {
+        console.log("interface " + ui + " no found")
+      }
+
+
     }
     return {
       list: list,
@@ -189,7 +125,6 @@ var JsonPIXI = (function () {
       Init: Init
     }
   })()
-  //Interface constructor
   function Interface(name, jsonTag) {
     var obj = this
     this.name = name
@@ -197,34 +132,39 @@ var JsonPIXI = (function () {
     if (jsonTag.Backgrounds) {
       obj.Backgrounds = []
       for (let b in jsonTag.Backgrounds) {
-        obj.Backgrounds.push(GameImage(jsonTag.Backgrounds[b], this.stage, false))
+        obj.Backgrounds.push(GameImage(jsonTag.Backgrounds[b], false, true))
       }
     }
     if (jsonTag.Images) {
       obj.Images = {}
-      for (var i in jsonTag.Images) {
+      for (let i in jsonTag.Images) {
         obj.Images[i] = {}
-        obj.Images[i] = GameImage(jsonTag.Images[i], this.stage, true)
+        obj.Images[i] = GameImage(jsonTag.Images[i], this.stage)
       }
     }
     if (jsonTag.Texts) {
       obj.Texts = {}
-      for (var t in jsonTag.Texts) {
-        obj.Texts[t] = GameText(jsonTag.Texts[t], this.stage, true)
+      for (let t in jsonTag.Texts) {
+        obj.Texts[t] = GameText(jsonTag.Texts[t], this.stage)
       }
     }
     if (jsonTag.Buttons) {
       obj.Buttons = {}
-      for (var b in jsonTag.Buttons) {
-        obj.Buttons[b] = new GameButton(jsonTag.Buttons[b], this.stage, true)
+      for (let b in jsonTag.Buttons) {
+        obj.Buttons[b] = new GameButton(jsonTag.Buttons[b], this.stage)
       }
     }
     if (jsonTag.onOpen) this.onOpen = new Command(jsonTag.onOpen);
     if (jsonTag.onClose) this.onClose = new Command(jsonTag.onClose);
+    Interfaces[name] = this
   }
   Interface.prototype.updateBackground = function () {
-    this.stage.removeChildAt(0)
-    this.stage.addChildAt(this.Backgrounds[Math.randomInt(0, obj.Backgrounds.length - 1)], 0)
+    if (this.hasOwnProperty("Backgrounds")) {
+      this.stage.addChildAt(this.Backgrounds[Math.floor(Math.random() * ((this.Backgrounds.length - 1) - 0 + 1)) + 0], 0)
+      if (this.stage.children[1].isBg) {
+        this.stage.removeChildAt(1)
+      }
+    }
   }
   //WORK IN PROGRESS!!!!
   function Command(command) {
@@ -234,17 +174,16 @@ var JsonPIXI = (function () {
       })
     }
   }
-  //For automatically set data texture and add to the stage
-  function GameImage(jsonTag = {}, stage) {
+  function GameImage(jsonTag = {}, stage, isBg = false) {
     var obj = new PIXI.Sprite(getTexture(jsonTag.texture))
     obj.dataTag = jsonTag
     obj.SetData(jsonTag)
     if (stage) {
       stage.addChild(obj)
     }
+    obj.isBg = isBg
     return obj
   }
-  //Default button
   function GameButton(jsonTag = {}, stage) {
     this.image = GameImage(jsonTag.image, stage)
     this.image.buttonMode = true
@@ -288,7 +227,6 @@ var JsonPIXI = (function () {
     this.image.tint = 0xFFFFFF
     this.image.scale.set(1, 1)
   }
-  // For interfaces
   function GameText(jsonTag = {}, stage) {
     var obj = new PIXI.Text(jsonTag.text || "undefined", jsonTag.style || TextStyles.standard)
     obj.SetData(jsonTag)
@@ -298,19 +236,30 @@ var JsonPIXI = (function () {
     return obj
   }
   return {
-    MakeRendererPrefab: function () {
-      GetRenderer()
-    },
-    renderer: GetRenderer,
-    JSONsLoaded: JSONs,
+    JSONs: JSONs,
     LoadJSON: GetJSON,
-    Layers: Layers,
+    MainLayer: MainLayer,
     Interfaces: Interfaces,
     Interface: Interface,
-    //To start things in order
     Start: function (dir = "json", callback, loadHandler) {
-      var Loader = GetJSON(dir + '/include.json', () => {
-        var jsonToParse = []
+      var Loader, interfacesData, jsonToParse = []
+      var secondLoad = function (noParse = false) {
+        for (var i in interfacesData.data) {
+          Interfaces[i] = new Interface(i, interfacesData.data[i])
+          Interfaces.list.push(Interfaces[i])
+          Interfaces.names.push(i)
+        }
+        jsonToParse.forEach((file) => {
+          JSONs[file] = PIXI.loader.resources[file].data
+        });
+        if (Interfaces.names.length === 0) {
+          console.log("No interface to load")
+        } else {
+          Interfaces.Init(Interfaces.names[0])
+        }
+        callback && callback();
+      }
+      var firstLoad = function () {
         Loader.data.INCLUDE_TEXTURES.forEach((texture) => {
           itemsToLoad.push(texture)
         })
@@ -319,30 +268,20 @@ var JsonPIXI = (function () {
           jsonToParse.push(file)
         })
         PIXI.loader.add(itemsToLoad).on("progress", (loader, resource) => {
-          console.log("Loading " + resource.name)
           if (loadHandler) {
             loadHandler(loader, resource)
           }
-        }).load(() => {
-          var interfacesData = GetJSON(dir + '/Interfaces.json', () => {
-            for (var i in interfacesData.data) {
-              Interfaces[i] = new Interface(i, interfacesData.data[i])
-              Interfaces.list.push(Interfaces[i])
-              Interfaces.names.push(i)
-            }
-            jsonToParse.forEach((file) => {
-              JSONs[file] = PIXI.loader.resources[file].data
-            })
-            Interfaces.Init(Interfaces.names[0])
-            callback();
-          })
-        }
-          );
-      })
-    },
-    Render: function () {
-      if (renderer) {
-        renderer.render(Layers.MainLayer)
+        }).load(secondLoad);
+      }
+
+      if (loaded) {
+        console.warn("This function if called again generate duplicates in PIXI.loader.resources, that give an error")
+        console.info("Also if you are trying to load interfaces generated in your code you can use Json PIXI.Init('yourInterface') that they will go to Json PIXI.MainLayer normally")
+      } else {
+        Loader = GetJSON(dir + '/include.json',
+          () => { interfacesData = GetJSON(dir + '/Interfaces.json', firstLoad) }
+        )
+        loaded = true
       }
     }
   }

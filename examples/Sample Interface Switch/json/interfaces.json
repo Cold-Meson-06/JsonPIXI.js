@@ -1,5 +1,5 @@
 {
-        "interface0": {
+    "interface0": {
         "Backgrounds": {
             "bgtes1": {
                 "texture": "img/exampleBG_1.png"
@@ -11,9 +11,38 @@
                     "texture": "img/buttonTest1.png",
                     "pos": [300,300]
                 },
-                "onClick": [
-                    ["Open",["Interface0"]]
+                "onClickStart": [
+                    ["Open",{"target":"interface1"}]
                 ]
+            }
+        },
+        "Texts":{
+            "txt1":{
+                "text":"♦♦♦ Testing ♦♦♦",
+                "pos":[200,400]
+            },
+            "txt2":{
+                "text":"This has not changed",
+                "pos":[500,100],
+                "rotation":8,
+                "style":{
+                    "fontFamily": "Yukarimobile",
+                    "fontSize": "50px",
+                    "fill": "#000000",
+                    "stroke": "#AAAFFF",
+                    "strokeThickness": 4,
+                    "wordWrap": true,
+                    "wordWrapWidth": 440
+                }
+            }
+        },
+        "Images":{
+            "image1":{
+                "texture":"img/imageSample1.png",
+                "pos":[0,100],
+                "anchor":[0.5,0],
+                "scale":[2,0.5],
+                "rotation":7
             }
         }
     },
@@ -38,8 +67,39 @@
                     "texture": "img/buttonTest3.png",
                     "pos": [300,300]
                 },
-                "onClick": [
-                    ["Open",["Interface0"]]
+                "onClickStart": [
+                    ["Back",{}]
+                ]
+            },
+            "button2": {
+                "image": {
+                    "texture": "img/buttonTest3.png",
+                    "pos": [300,400]
+                },
+                "onClickStart": [
+                    ["If",{
+                    "condiction":["Var1","isTrue"],
+                    "True":[
+                        ["ToogleValue",{"key":"Var1"}],                        
+                        ["SetData",{"target":"interface1","element":"text1","data":{
+                            "text":"Changed to true",
+                            "style":{
+                                "fontSize": "50px",
+                                "fill": "#00ff37"
+                        }}}],
+                        ["SetData",{"target":"interface1","element":"button1","data":{"texture":"img/buttonTest2.png"}}]
+                    ],
+                    "False":[
+                        ["ToogleValue",{"key":"Var1"}],                        
+                        ["SetData",{"target":"interface1","element":"text1","data":{
+                            "text":"Changed to true",
+                            "style":{
+                                "fontSize": "40px",
+                                "fill": "#ff0000"
+                            }}}],
+                        ["SetData",{"target":"interface1","element":"button1","data":{"texture":"img/buttonTest1.png"}}]
+                    ]
+                    }]
                 ]
             }
         },
@@ -48,6 +108,9 @@
                 "texture":"img/imageSample1.png",
                 "pos":[300,300]
             }
-        }
+        },
+        "onCreate":[
+            ["SetValue",{"key":"Var1","value":false}]
+        ]
     }
 }

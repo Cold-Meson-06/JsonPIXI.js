@@ -1,17 +1,14 @@
 PIXI.DisplayObject.prototype.SetData = function (jsonTag) {
     if (Array.isArray(jsonTag.pos)) {
-        this
-            .position
+        this.position
             .set(jsonTag.pos[0], jsonTag.pos[1])
     }
     if (Array.isArray(jsonTag.skew)) {
-        this
-            .skew
+        this.skew
             .set(jsonTag.skew[0], jsonTag.skew[1])
     }
     if (Array.isArray(jsonTag.scale)) {
-        this
-            .scale
+        this.scale
             .set(jsonTag.scale[0], jsonTag.scale[1])
     }
     if (Array.isArray(jsonTag.size)) {
@@ -19,13 +16,11 @@ PIXI.DisplayObject.prototype.SetData = function (jsonTag) {
         this.width = jsonTag.size[1]
     }
     if (Array.isArray(jsonTag.anchor)) {
-        this
-            .anchor
+        this.anchor
             .set(jsonTag.anchor[0], jsonTag.anchor[1])
     }
     if (Array.isArray(jsonTag.pivot)) {
-        this
-            .pivot
+        this.pivot
             .set(jsonTag.pivot[0], jsonTag.pivot[1])
     }
     if (jsonTag.hasOwnProperty("tint")) {
@@ -43,11 +38,9 @@ PIXI.DisplayObject.prototype.SetData = function (jsonTag) {
 }
 PIXI.DisplayObject.prototype.ResetData = function () {
     this.position
-        .set(this.dataTag.pos[0], this.dataTag.pos[1])
-    this.skew
-        .set(0, 0)
-    this.scale
-        .set(1, 1)
+    .set(this.dataTag.pos[0], this.dataTag.pos[1])
+    this.skew.set(0, 0)
+    this.scale.set(1, 1)
     this.alpha = 1
     this.rotation = 0
     this.tint = 0xFFFFFF
@@ -57,8 +50,7 @@ var JsonPIXI = (function () {
     var itemsToLoad = []
     var loaded = false
     var InterfaceLayer = new PIXI.Container()
-    var MainLayer = new PIXI
-        .Container()
+    var MainLayer = new PIXI.Container()
         .addChild(InterfaceLayer)
     var TextStyles = {
         standard: {

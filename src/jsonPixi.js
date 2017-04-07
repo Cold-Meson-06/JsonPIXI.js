@@ -45,14 +45,14 @@ PIXI.DisplayObject.prototype.ResetData = function () {
     this.rotation = 0
     this.tint = 0xFFFFFF
 }
-var JsonPIXI = (function () {
-    var JSONs = {}
-    var itemsToLoad = []
-    var loaded = false
-    var InterfaceLayer = new PIXI.Container()
-    var MainLayer = new PIXI.Container()
+const JsonPIXI = (function () {
+    const JSONs = {}
+    const itemsToLoad = []
+    let loaded = false
+    const InterfaceLayer = new PIXI.Container()
+    const MainLayer = new PIXI.Container()
         .addChild(InterfaceLayer)
-    var TextStyles = {
+    let TextStyles = {
         standard: {
             fill: '#000000',
             fontFamily: 'Yukarimobile',
@@ -63,19 +63,8 @@ var JsonPIXI = (function () {
             wordWrapWidth: 440
         }
     }
-    var GetJSON = function (url, callback, forceCallback = false) {
-        var buffer = {}
-        var xobj = new XMLHttpRequest();
-        xobj.overrideMimeType('application/json');
-        xobj.open('GET', url, true);
-        xobj.onreadystatechange = function () {
-            if (xobj.readyState == 4 && xobj.status == '200') {
-                buffer.data = JSON.parse(xobj.responseText);
-                callback && callback()
-            };
-        };
-        xobj.send(null)
-        return buffer
+    const GetJSON = function (url, callback, forceCallback = false) {
+           fetch(url).then(r => r.json().then(e => callback && callback(e)))        
     };
     var getTexture = function (texture) {
         if (!PIXI.utils.TextureCache[texture]) {
